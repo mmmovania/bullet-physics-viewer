@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<ItemGroup>
+		<Filter Include="Demos">
+			<UniqueIdentifier>{526EF654-6599-744F-86E4-3940AF8ECC1E}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="Demos\CollisionDemo">
+			<UniqueIdentifier>{35A8D64B-FD94-404F-8FB9-AF32E7127E90}</UniqueIdentifier>
+		</Filter>
+	</ItemGroup>
+	<ItemGroup>
+		<ClInclude Include="..\..\Demos\CollisionDemo\CollisionDemo.h">
+			<Filter>Demos\CollisionDemo</Filter>
+		</ClInclude>
+	</ItemGroup>
+	<ItemGroup>
+		<ClCompile Include="..\..\Demos\CollisionDemo\CollisionDemo.cpp">
+			<Filter>Demos\CollisionDemo</Filter>
+		</ClCompile>
+	</ItemGroup>
+	<ItemGroup>
+		<ResourceCompile Include="..\bullet.rc" />
+	</ItemGroup>
+</Project>
