@@ -53,7 +53,7 @@ enum MouseButtonMode { twoButtons = 2, threeButtons = 3 };
 class  HGLCamera
 {
 public:
-    HGLCamera(MouseButtonMode m = twoButtons, GLfloat init_distance = 20.0, GLfloat init_x_pan = 0.0, 
+    HGLCamera(MouseButtonMode m = twoButtons, bool bContinuous = false, GLfloat init_distance = 20.0, GLfloat init_x_pan = 0.0, 
             GLfloat init_y_pan = 0.0, GLfloat init_alpha = 0.0, GLfloat init_beta = 0.0);          
     virtual ~HGLCamera();
 
@@ -73,9 +73,12 @@ public:
 	void mouseMove(GLint x, GLint y, GLint Mouse_button_press_status);
 	void Update(void);
 
-	void SetMouseSensitivity(GLfloat zoom, GLfloat pan, GLfloat rot);  // 0~1 사이의 값..
+	void SetMouseSensitivity(GLfloat zoom, GLfloat pan, GLfloat rot); 
+	void SetContinouse(bool bContinuous) { m_bContinuous = bContinuous; }
 
 private:
+	bool m_bContinuous;
+
 	GLfloat rotateTransformMx[4][4];
 	GLfloat panTransformMx[4][4];
 	GLfloat upvectorTransformMx[4][4];
@@ -89,6 +92,9 @@ private:
 	GLfloat  Halpha;   // angle around X axis
 	GLfloat  Hbeta;    // angle around Y axis
 	Point2Df HmousePressPoint;  // 2D point of mouse pressing
+
+	GLint old_x;
+	GLint old_y;
 		 
 	GLint    HzoomRate;
 	GLint    Hx_panRate; 

@@ -11,72 +11,80 @@
 #include <math.h>
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-HGLCamera::HGLCamera(MouseButtonMode m, GLfloat init_distance, GLfloat init_x_pan, 
+HGLCamera::HGLCamera(MouseButtonMode m, bool bContinuous, GLfloat init_distance, GLfloat init_x_pan, 
                      GLfloat init_y_pan, GLfloat init_alpha, GLfloat init_beta)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 {
-    for(int i=0; i<4; i++)
-    {    
-	   for(int j=0; j<4; j++)
-	   {
-            rotateTransformMx[i][j]=0.0;
-            panTransformMx[i][j]=0.0;
-            upvectorTransformMx[i][j]=0.0;    
+	for(int i=0; i<4; i++)
+	{    
+		for(int j=0; j<4; j++)
+		{
+			rotateTransformMx[i][j]=0.0;
+			panTransformMx[i][j]=0.0;
+			upvectorTransformMx[i][j]=0.0;    
 
 
-            if(i == j)
-            {
-               former_rotateTransformMx[i][j]=1.0;
-               former_panTransformMx[i][j]=1.0;
-               former_upvectorTransformMx[i][j]=1.0;  
-            }
+			if(i == j)
+			{
+				former_rotateTransformMx[i][j]=1.0;
+				former_panTransformMx[i][j]=1.0;
+				former_upvectorTransformMx[i][j]=1.0;  
+			}
 
-            else  
-            {
-               former_rotateTransformMx[i][j]=0.0;
-               former_panTransformMx[i][j]=0.0;
-               former_upvectorTransformMx[i][j]=0.0;  
-            } 
+			else  
+			{
+				former_rotateTransformMx[i][j]=0.0;
+				former_panTransformMx[i][j]=0.0;
+				former_upvectorTransformMx[i][j]=0.0;  
+			} 
 
-	   }
-    }
+		}
+	}
 
-    distance_betw_cam_n_WOrgin = init_distance;
-    Hx_pan = init_x_pan;
-    Hy_pan = init_y_pan;
-    Halpha = init_alpha;
-    Hbeta = init_beta;
+	distance_betw_cam_n_WOrgin = init_distance;
+	Hx_pan = init_x_pan;
+	Hy_pan = init_y_pan;
+	Halpha = init_alpha;
+	Hbeta = init_beta;
 
-    HzoomRate = 0;
-    Hx_panRate = 0;
-    Hy_panRate = 0;
-    HalphaRate = 0;
-    HbetaRate = 0;
+	HzoomRate = 0;
+	Hx_panRate = 0;
+	Hy_panRate = 0;
+	HalphaRate = 0;
+	HbetaRate = 0;
 
-    HzoomSpeedRate = 0.1f;
-    HpanSpeedRate = 0.008f;
-    HrotateSpeedRate = 0.015f;
+	old_x = 0;
+	old_y = 0;
 
-    // default mouse mode is two buttons mouse. 
-     if( m == twoButtons )
-     {     
-    	MouseButtonModeSetting.Zoom_Mouse_Button =  Left_button;
-    	MouseButtonModeSetting.Pan_Mouse_Button = Right_button;
-    	MouseButtonModeSetting.Rotate_view_Mouse_Button = ( Left_button | Right_button );
-     }
+	m_bContinuous = bContinuous;
 
-     else if( m == threeButtons )
-     {   
-    	MouseButtonModeSetting.Zoom_Mouse_Button =  Middle_button;
-    	MouseButtonModeSetting.Pan_Mouse_Button = Right_button;
-    	MouseButtonModeSetting.Rotate_view_Mouse_Button = ( Middle_button | Right_button );  
-     }
+	HzoomSpeedRate = 0.1f;
+	HpanSpeedRate = 0.008f;
+	HrotateSpeedRate = 0.015f;
+
+	setMouseButtonMode(m);
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~*/
 HGLCamera::~HGLCamera()
 /*~~~~~~~~~~~~~~~~~~~~~~~~*/
 {  
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+void HGLCamera::Update(void)
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+{
+    if(HzoomRate != 0)    
+    {
+        distance_betw_cam_n_WOrgin -= HzoomRate*HzoomSpeedRate ;
+    }
+
+    Hx_pan += Hx_panRate*HpanSpeedRate;
+    Hy_pan += Hy_panRate*HpanSpeedRate;
+
+    Halpha -= HalphaRate*HrotateSpeedRate;
+    Hbeta -= HbetaRate*HrotateSpeedRate;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -103,6 +111,9 @@ void HGLCamera::ApplyCamera()
 	static GLfloat Z = 0.0f;
     GLfloat a, b = 0.0f;
 
+	if ( m_bContinuous )
+		Update();
+
   ////////////////////////////////////////////////////////
   // for transforming Object coords to World coords     //
   // This is very very important.                       //
@@ -121,9 +132,21 @@ void HGLCamera::ApplyCamera()
     a = DEG2RAD(Halpha);
     b = DEG2RAD(Hbeta); 
 
-    X += Hx_pan*cos(b) + Hy_pan*sin(a)*sin(b);
-    Y += Hy_pan*cos(a);
-    Z += Hx_pan*sin(b) - Hy_pan*sin(a)*cos(b);
+	if ( 1 )
+	{
+		X += Hx_pan*cos(b) + Hy_pan*sin(a)*sin(b);
+		Y += Hy_pan*cos(a);
+		Z += Hx_pan*sin(b) - Hy_pan*sin(a)*cos(b);
+
+		Hx_pan = 0.0;
+		Hy_pan = 0.0;
+	}
+	else
+	{
+		X = Hx_pan*cos(b) + Hy_pan*sin(a)*sin(b);
+		Y = Hy_pan*cos(a);
+		Z = Hx_pan*sin(b) - Hy_pan*sin(a)*cos(b);
+	}
 
   ////////////////////////////////////////////////////////
 
@@ -135,10 +158,80 @@ void HGLCamera::ApplyCamera()
     glRotatef(Halpha, 1.0, 0.0, 0.0);
     glRotatef(Hbeta, 0.0, 1.0, 0.0);
 
-    glTranslatef(X, Y, Z);
+    glTranslatef(X, Y, Z);    
+}
 
-    Hx_pan = 0.0;
-    Hy_pan = 0.0;
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+void HGLCamera::mousePress(GLint x, GLint y)
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+{
+     HzoomRate = 0;
+     Hx_panRate = 0;
+     Hy_panRate = 0;
+     HalphaRate = 0;
+     HbetaRate = 0;
+
+	 old_x = x;
+	 old_y = y;
+
+     HmousePressPoint.x = (GLfloat)x;
+     HmousePressPoint.y = (GLfloat)y;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+void HGLCamera::mouseRelease(GLint x, GLint y)
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+{
+     HzoomRate = 0;
+     Hx_panRate = 0;
+     Hy_panRate = 0;
+     HalphaRate = 0;
+     HbetaRate = 0;
+
+     HmousePressPoint.x = (GLfloat)x;
+     HmousePressPoint.y = (GLfloat)y;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+void HGLCamera::mouseMove(GLint x, GLint y, GLint Mouse_button_press_status)
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+{	
+    if(Mouse_button_press_status == MouseButtonModeSetting.Zoom_Mouse_Button )
+    {
+		if ( m_bContinuous )
+			HzoomRate = (GLint)(x - HmousePressPoint.x);
+		else
+			distance_betw_cam_n_WOrgin += -(y - old_y)*HzoomSpeedRate;
+    }
+    else if(Mouse_button_press_status == MouseButtonModeSetting.Pan_Mouse_Button )
+    {
+		if ( m_bContinuous )
+		{
+			Hx_panRate = (GLint)(x - HmousePressPoint.x); 
+			Hy_panRate = (GLint)(-y + HmousePressPoint.y); 
+		}
+		else
+		{
+			Hx_pan += (x - old_x) * HpanSpeedRate;
+			Hy_pan += (-y + old_y) * HpanSpeedRate;    
+		}
+    }
+    else if(Mouse_button_press_status == MouseButtonModeSetting.Rotate_view_Mouse_Button )
+    {
+		if ( m_bContinuous )
+		{
+			HalphaRate =  (GLint)(-y + HmousePressPoint.y); 
+			HbetaRate = (GLint)(-x + HmousePressPoint.x); 
+		}
+		else
+		{
+			Halpha += (y - old_y)*HrotateSpeedRate;
+			Hbeta += (x - old_x)*HrotateSpeedRate;
+		}
+    }
+
+	old_x = x;
+	old_y = y;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -293,96 +386,41 @@ void HGLCamera::setMouseButtonMode(MouseButtonMode m)
 {
 	if( m == twoButtons )
 	{     
-		MouseButtonModeSetting.Zoom_Mouse_Button =  Left_button;
-		MouseButtonModeSetting.Pan_Mouse_Button = Right_button;
+		MouseButtonModeSetting.Zoom_Mouse_Button =  Right_button;
+		MouseButtonModeSetting.Pan_Mouse_Button = Left_button;
 		MouseButtonModeSetting.Rotate_view_Mouse_Button = ( Left_button | Right_button );
 	}
 	else if( m == threeButtons )
 	{  
-		MouseButtonModeSetting.Zoom_Mouse_Button =  Middle_button;
-		MouseButtonModeSetting.Pan_Mouse_Button = Right_button;
-		MouseButtonModeSetting.Rotate_view_Mouse_Button = ( Middle_button | Right_button );  
+		MouseButtonModeSetting.Zoom_Mouse_Button =  Right_button;
+		MouseButtonModeSetting.Pan_Mouse_Button = Middle_button;
+		MouseButtonModeSetting.Rotate_view_Mouse_Button = Left_button;  
 	}
-}
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void HGLCamera::mousePress(GLint x, GLint y)
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-{
-     HzoomRate = 0;
-     Hx_panRate = 0;
-     Hy_panRate = 0;
-     HalphaRate = 0;
-     HbetaRate = 0;
-
-     HmousePressPoint.x = (GLfloat)x;
-     HmousePressPoint.y = (GLfloat)y;
-}
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void HGLCamera::mouseRelease(GLint x, GLint y)
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-{
-     HzoomRate = 0;
-     Hx_panRate = 0;
-     Hy_panRate = 0;
-     HalphaRate = 0;
-     HbetaRate = 0;
-
-     HmousePressPoint.x = (GLfloat)x;
-     HmousePressPoint.y = (GLfloat)y;
-}
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void HGLCamera::mouseMove(GLint x, GLint y, GLint Mouse_button_press_status)
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-{
-    if(Mouse_button_press_status == MouseButtonModeSetting.Zoom_Mouse_Button )
-    {
-       HzoomRate = (GLint)(x - HmousePressPoint.x);
-    }
-    else if(Mouse_button_press_status == MouseButtonModeSetting.Pan_Mouse_Button )
-    {
-       Hx_panRate = (GLint)(x - HmousePressPoint.x); 
-       Hy_panRate = (GLint)(-y + HmousePressPoint.y); 
-    }
-    else if(Mouse_button_press_status == MouseButtonModeSetting.Rotate_view_Mouse_Button )
-    {
-       HalphaRate =  (GLint)(-y + HmousePressPoint.y); 
-       HbetaRate = (GLint)(-x + HmousePressPoint.x); 
-    }
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 void HGLCamera::SetMouseSensitivity(GLfloat zoom, GLfloat pan, GLfloat rot)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 {
-	if(zoom > 1.0f)  zoom = 1.0f;
-		else if(zoom < 0.0f) zoom = 0.0f;
+	if ( m_bContinuous )
+	{
+		if(zoom > 1.0f)  zoom = 1.0f;
+			else if(zoom < 0.0f) zoom = 0.0f;
 
-	if(pan > 1.0f)  pan = 1.0f;
-		else if(pan < 0.0f) pan = 0.0f;
+		if(pan > 1.0f)  pan = 1.0f;
+			else if(pan < 0.0f) pan = 0.0f;
 
-	if(rot > 1.0f)  rot = 1.0f;
-		else if(rot < 0.0f) rot = 0.0f;
+		if(rot > 1.0f)  rot = 1.0f;
+			else if(rot < 0.0f) rot = 0.0f;
 
-    HzoomSpeedRate *= zoom;
-    HpanSpeedRate *= pan;
-    HrotateSpeedRate *= rot;
-}
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void HGLCamera::Update(void)
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-{
-    if(HzoomRate != 0)    
-    {
-        distance_betw_cam_n_WOrgin -= HzoomRate*HzoomSpeedRate ;
-    }
-
-    Hx_pan = Hx_panRate*HpanSpeedRate;
-    Hy_pan = Hy_panRate*HpanSpeedRate;
-
-    Halpha += HalphaRate*HrotateSpeedRate;
-    Hbeta += HbetaRate*HrotateSpeedRate;
+		HzoomSpeedRate *= zoom;
+		HpanSpeedRate *= pan;
+		HrotateSpeedRate *= rot;
+	}
+	else
+	{
+		HzoomSpeedRate = zoom;
+		HpanSpeedRate = pan;
+		HrotateSpeedRate = rot;
+	}
 }
