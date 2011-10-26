@@ -16,13 +16,13 @@ CBulletRigidbodySim::CBulletRigidbodySim(void) : m_BulletFileLoader(NULL)
 
 CBulletRigidbodySim::~CBulletRigidbodySim(void)
 {
-	delete m_shapeDrawer;
-	delete m_BulletFileLoader;
 	delete m_pDynamicsWorld;
+	delete m_shapeDrawer;
+	delete m_BulletFileLoader;	
 	delete m_pColConfiguration;
 	delete m_pColDispatcher;
 	delete m_pBroadphase;
-	delete m_pConstraintSolver;
+	delete m_pConstraintSolver;	
 }
 
 bool CBulletRigidbodySim::Create()
