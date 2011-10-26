@@ -35,7 +35,7 @@ int width = 1280;
 int height = 1024;
 int bits = 32; 
 
-HGLCamera   hCamera(twoButtons, 130.0f, 0.0f, 30.0f, 30.0f, 30.0f);
+HGLCamera   hCamera(threeButtons, false, 200.0f, 0.0f, 30.0f, 30.0f, 30.0f);
 GLuint btmPlate;
 
 GLfloat green[4] = {0.0f, 0.8f, 0.2f, 1.0f};
@@ -359,8 +359,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			my = HIWORD(lParam);
 			//SetCapture(g_hWnd);
 			hCamera.mousePress(mx, my);
-			
-			return 0;
 			break;
 
 		case WM_LBUTTONUP:
@@ -368,8 +366,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			my = HIWORD(lParam);
 			//ReleaseCapture();
 			hCamera.mouseRelease(mx, my);
-
-			return 0;
 			break;
 
 		case WM_RBUTTONDOWN:
@@ -377,8 +373,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			my = HIWORD(lParam);
 			//SetCapture(g_hWnd);
 			hCamera.mousePress(mx, my);
-			
-			return 0;
 			break;
 
 		case WM_RBUTTONUP:
@@ -386,8 +380,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			my = HIWORD(lParam);
 			//ReleaseCapture();
 			hCamera.mouseRelease(mx, my);
+			break;
 
-			return 0;
+		case WM_MBUTTONDOWN:
+			mx = LOWORD(lParam);
+			my = HIWORD(lParam);
+			//SetCapture(g_hWnd);
+			hCamera.mousePress(mx, my);
+			break;
+
+		case WM_MBUTTONUP:
+			mx = LOWORD(lParam);
+			my = HIWORD(lParam);
+			//ReleaseCapture();
+			hCamera.mouseRelease(mx, my);
+			break;
+
+		case WM_MOUSEHWHEEL:
+			// TODO
 			break;
 
 		case WM_MOUSEMOVE:
@@ -404,12 +414,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 			   hCamera.mouseMove(mx, my, Right_button);
 			}
-
 			else if( wParam == (MK_RBUTTON | MK_LBUTTON) )
 			{
 			   hCamera.mouseMove(mx, my, (Right_button | Left_button) );
 			}
-			
+			else if( wParam == MK_MBUTTON )
+			{
+			   hCamera.mouseMove(mx, my, Middle_button);
+			}			
+
 			return 0;
 			break;
 
@@ -582,7 +595,7 @@ void Initialize()
 	glEnable(GL_LIGHT1);
 
 	// Setting Camera Moving Sensitivity..
-	hCamera.SetMouseSensitivity(0.05f, 0.3f, 0.3f);
+	hCamera.SetMouseSensitivity(1.5f, 0.3f, 0.3f);
 	
 	// Generating bottom plate...
 	btmPlate = hCamera.makeBottomPlate(gray, black, 200.0f, 200.0f, 10.0f, 0.0f);
@@ -602,8 +615,6 @@ void RenderFunc()
 	static GLfloat GreenSurface[] = { 0.0f, 1.0f, 0.0f, 1.0f};
 	static GLfloat BlueSurface[]  = { 0.0f, 0.0f, 1.0f, 1.0f};
 	static GLfloat YellowSurface[]  = { 1.0f, 1.0f, 0.0f, 1.0f};
-
-	hCamera.Update();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		// clear screen and depth buffer
 	glLoadIdentity();										// reset modelview matrix
