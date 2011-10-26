@@ -396,8 +396,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			hCamera.mouseRelease(mx, my);
 			break;
 
-		case WM_MOUSEHWHEEL:
-			// TODO
+		case WM_MOUSEWHEEL:
+			{
+				float zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+				hCamera.mouseWheel(-zDelta*0.13);
+			}
 			break;
 
 		case WM_MOUSEMOVE:
@@ -634,8 +637,8 @@ void RenderFunc()
 	glBegin(GL_QUADS);
 		glColor3f(0.9F, 0.9F, 0.9F); glVertex2f( 1.0F,  1.0F);
 		glColor3f(0.9F, 0.9F, 0.9F); glVertex2f(-1.0F,  1.0F);
-		glColor3f(0.2F, 0.2F, 0.2F); glVertex2f(-1.0F, -1.0F);
-		glColor3f(0.2F, 0.2F, 0.2F); glVertex2f( 1.0F, -1.0F);
+		glColor3f(0.5F, 0.5F, 0.5F); glVertex2f(-1.0F, -1.0F);
+		glColor3f(0.5F, 0.5F, 0.5F); glVertex2f( 1.0F, -1.0F);
 	glEnd();
 	
 	glEnable(GL_DEPTH_TEST);
