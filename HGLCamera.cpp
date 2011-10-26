@@ -234,6 +234,11 @@ void HGLCamera::mouseMove(GLint x, GLint y, GLint Mouse_button_press_status)
 	old_y = y;
 }
 
+void HGLCamera::mouseWheel(GLfloat delta)
+{
+	distance_betw_cam_n_WOrgin += delta*HzoomSpeedRate;
+}
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 Point3Df HGLCamera::GetUnProjectPoint(GLdouble winX, GLdouble winY, GLdouble winZ)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

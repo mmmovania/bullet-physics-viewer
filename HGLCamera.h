@@ -71,6 +71,7 @@ public:
 	void mousePress(GLint x, GLint y);
 	void mouseRelease(GLint x, GLint y);
 	void mouseMove(GLint x, GLint y, GLint Mouse_button_press_status);
+	void mouseWheel(GLfloat delta);
 	void Update(void);
 
 	void SetMouseSensitivity(GLfloat zoom, GLfloat pan, GLfloat rot); 
