@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="btSoftBulletWorldImporter.cpp" />
     <ClCompile Include="BulletRigidbodySim.cpp" />
     <ClCompile Include="GLDebugFont.cpp" />
     <ClCompile Include="GL_ShapeDrawer.cpp" />
@@ -85,6 +86,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="btSoftBulletWorldImporter.h" />
     <ClInclude Include="BulletRigidbodySim.h" />
     <ClInclude Include="GLDebugFont.h" />
     <ClInclude Include="GL_ShapeDrawer.h" />
